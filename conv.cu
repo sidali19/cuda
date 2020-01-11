@@ -24,7 +24,8 @@ static void HandleError(cudaError_t err,const char *file,int line) {
 
 #define HANDLE_ERROR(err) (HandleError( err, __FILE__, __LINE__ ))
 
-__global__ viod PictureKernel (unsigned char* dPin, unsigned char* dPout, float *mask, int height, int width)
+__global__ 
+void PictureKernel (unsigned char* dPin, unsigned char* dPout, float *mask, int height, int width)
 {	
 
 	// Compute row and column number of dPin and dPout element
@@ -34,7 +35,7 @@ __global__ viod PictureKernel (unsigned char* dPin, unsigned char* dPout, float 
 	int up = position - width;
 	int down = position + width;
 	// Each thread computes one element of dPout if in range
-	if(row==0||col=0||(row=width-1)||(row==height-1))
+	if(row==0||col==0||(row==width-1)||(row==height-1))
 	{
 		dPout[position] = dPin[position];
 		return;
@@ -43,8 +44,8 @@ __global__ viod PictureKernel (unsigned char* dPin, unsigned char* dPout, float 
 
 
 	float val = (mask[0]*dPin[up-1] + mask[1]*dPin[up] + mask[2]*dPin[up + 1]
-			+ mask[3]*dPin[position-1] + mask[4]*dPin[postion] + mask[5]*dPin[position+1]
-			+ mask[6]*dPin[down -1] + K[7]*dPin[down] + K[8]*dPin[down+1]);
+			+ mask[3]*dPin[position-1] + mask[4]*dPin[position] + mask[5]*dPin[position+1]
+			+ mask[6]*dPin[down -1] + mask[7]*dPin[down] + mask[8]*dPin[down+1]);
 	dPout[position] = (val <= 0 ? 0 : (val >= 255 ? 255 : (unsigned char)val));
 }
 
@@ -57,7 +58,7 @@ int main(int argc, char** argv)
 		int const desired_channels = 1; // request to convert image to gray
 		char const * const filename = "./lion.png"; 
 	// Load the image 
-	unsigned char* data_in = stdi_load(filename, &width, &height, &nchannels, desired_channels);
+	unsigned char* data_in = stbi_load(filename, &width, &height, &nchannels, desired_channels);
 
 	// check for errors 
 	if (!data_in || !width || !height || !nchannels){
@@ -66,7 +67,7 @@ int main(int argc, char** argv)
 	}
 
 	// the filter  
-	float mask[FILTER_SIZE*FILTER_SIZE] = { -1, -1, -1, -1, 8, -1, -1, -1, -1};
+	float mask[FILTRE_SIZE*FILTRE_SIZE] = { -1, -1, -1, -1, 8, -1, -1, -1, -1};
 
 	size_t img_size = width * height * desired_channels;
 	size_t h_size = 9 *sizeof(float);
