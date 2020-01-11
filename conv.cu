@@ -42,7 +42,6 @@ void PictureKernel (unsigned char* dPin, unsigned char* dPout, float *mask, int 
 
 int main(void)
 {
-	// Lecture et chargement de l'image dans le host en ligne de commande 
 		int width = 0, height = 0, nchannels = 0;
 		int const desired_channels = 1; // request to convert image to gray
 		char const * const filename = "im.jpg"; 
@@ -71,7 +70,6 @@ int main(void)
 	
 	
 
-	// Copie des donnees de host vers le device 
 	cudaMemcpy (gpu_data_in, data_in, width * height * desired_channels*sizeof(float) , cudaMemcpyHostToDevice);
 	cudaMemcpy (gpu_mask, mask , FILTRE_SIZE*FILTRE_SIZE*sizeof(float), cudaMemcpyHostToDevice);
 	
@@ -91,15 +89,14 @@ int main(void)
 
 
 	stbi_write_jpg("sortie.jpg", height, width, 1, data_out, height);
-	printf("zebi");
-	//Deallocation des memoires
+
+	
 	free(data_in);
 	free(data_out);
 	cudaFree(gpu_data_in);
 	cudaFree(gpu_data_out);
 	cudaFree(gpu_mask);
 	
-	printf("zebi");
-	printf("\n");
+
 }
 
