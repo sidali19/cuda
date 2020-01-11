@@ -61,24 +61,22 @@ int main(void)
 	size_t img_size = width * height * desired_channels;
 	size_t h_size = 9 *sizeof(float);
 	unsigned char*data_out = (unsigned char*)malloc(width * height * desired_channels);
-	// Affichage des infos de l'image
-	//cout << "Load the image successfully!"<< endl;
-	//cout << "Width = "<< rows << " & Height = " << cols << endl;
+
 	// Memory allocation GPU
 	unsigned char *gpu_data_in, *gpu_data_out;
 	float * gpu_mask;
-	cudaMalloc(reinterpret_cast<void **>(&gpu_data_in), width * height * desired_channels*sizeof(float));
-	cudaMalloc(reinterpret_cast<void **>(&gpu_data_out), width * height * desired_channels*sizeof(float));
-	cudaMalloc(reinterpret_cast<void **>(&gpu_mask), FILTRE_SIZE*FILTRE_SIZE*sizeof(float));
 	
-	//	auto h_start = steady_clock::now();
+	cudaMalloc (( void **)&gpu_data_in, width * height * desired_channels*sizeof(float));
+	cudaMalloc (( void **)&gpu_data_out), width * height * desired_channels*sizeof(float));
+	cudaMalloc (( void **)&gpu_mask), FILTRE_SIZE*FILTRE_SIZE*sizeof(float));
+	
+	
 
 	// Copie des donnees de host vers le device 
 	cudaMemcpy (gpu_data_in, data_in, width * height * desired_channels*sizeof(float) , cudaMemcpyHostToDevice);
 	cudaMemcpy (gpu_mask, mask , FILTRE_SIZE*FILTRE_SIZE*sizeof(float), cudaMemcpyHostToDevice);
 	
-	// appel du kernel
-	//unsigned int iter = 10000;
+
 
 	// Set up the grid and block dimensions for the executions
 	const unsigned int block_col = 16;
@@ -86,45 +84,13 @@ int main(void)
 	dim3 grid(height/block_col, width/ block_row, 1);
 	dim3 threadBlock(block_col, block_row, 1);
 
-	// **** CONVOLUTION STARTS HERE ! ****
-		//float elapsed = 0;
-		//cudaEvent_t start, stop;
-	
-		//HANDLE_ERROR(cudaEventCreate(&start));
-		//HANDLE_ERROR(cudaEventCreate(&stop));
 
-		//HANDLE_ERROR(cudaEventRecord(start, 0));
-
-		//checkCudaErrors(cudaDeviceSynchroonise());
-	
-		//for(int i=0; i < iter; i++){
 		PictureKernel <<< grid, threadBlock >>>(gpu_data_in, gpu_data_out, gpu_mask, height, width);
-		//} 
-
-		//checkCudaErrors(cudaDeviceSynchroonise());
 	
-		//HANDLE_ERROR(cudaEventRecord(stop, 0));
-		//HANDLE_ERROR(cudaEventSynchronise(stop));
-
-		//HANDLE_ERROR(cudaEventElapsedTime(&elapsed, start, stop));
-
-		//HANDLE_ERROR(cudaEventDestroy(start));
-		//HANDLE_ERROR(cudaEventDestroy(stop));
-	
-	//	float lasptime = elapsed;
-
-	/*	cout << "Total Elapsed Time for the Kernel(GPU): "<< lasptime << " s " << endl;
-		auto h_end = steady_clock::now();
-		cout << "Total Elapsed Time(including data transfer): " << (duration<double>(h_end - h_start).count()) << "s\n " << endl;
-
-		int pixel_second = (height * width) / lasptime;
-	cout << "Performance  in pixel/s "<< pixel_second << endl;
-	*/
-	// **** CONVOLUTION ENDS HERE ! ****	
 	
 	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
 
-	// Write convoluted image to file (.jpg)
+
 	stbi_write_jpg("sortie.jpg", height, width, 1, data_out, height);
 	printf("zebi");
 	//Deallocation des memoires
