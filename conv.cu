@@ -58,8 +58,7 @@ int main(void)
 	// the filter  
 	float mask[FILTRE_SIZE*FILTRE_SIZE] = { -1, -1, -1, -1, 8, -1, -1, -1, -1};
 
-	size_t img_size = width * height * desired_channels;
-	size_t h_size = 9 *sizeof(float);
+
 	unsigned char*data_out = (unsigned char*)malloc(width * height * desired_channels);
 
 	// Memory allocation GPU
