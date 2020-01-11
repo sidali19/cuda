@@ -136,8 +136,8 @@ int main(int argc, char** argv)
 	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
 
 	// Write convoluted image to file (.jpg)
-		stbi_write_jpg("sortie.jpg", height, width, 1, data_out, height);
-
+	stbi_write_jpg("sortie.jpg", height, width, 1, data_out, height);
+	printf("zebi");
 	//Deallocation des memoires
 	free(data_in);
 	free(data_out);
