@@ -1,4 +1,15 @@
-#define FILTRE_SIZE 3 ;
+#include <stdio.h>
+#include <cuda_runtime.h>
+#include <helper_cuda.h>
+#include <helper_functions.h>
+#include <iostream>
+#include <cstdlib>
+#include <time.h>
+#include <chrono>
+#include <math.h>
+using namespace std;
+using namespace std:: chrono;
+#define FILTRE_SIZE 3 
 
 static void HandleError(cudaError_t err,
 	const char *file,
