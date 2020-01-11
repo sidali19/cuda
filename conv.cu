@@ -11,9 +11,7 @@ using namespace std;
 using namespace std:: chrono;
 #define FILTRE_SIZE 3 
 
-static void HandleError(cudaError_t err,
-	const char *file,
-	int line) {
+static void HandleError(cudaError_t err,const char *file,int line) {
 	if (err != cudaSuccess){
 		printf("%s in %s at line %d\n" , cudaGetErrorString(err),
 			file, line);
@@ -71,8 +69,8 @@ int main(int argc, char** argv)
 	size_t h_size = 9 *sizeof(float);
 	unsigned char*data_out = (unsigned char*)malloc(width * height * desired_channels);
 	// Affichage des infos de l'image
-	cout << "Load the image successfully!"<< endl;
-	cout << "Width = "<< rows << " & Height = " << cols << endl;
+	//cout << "Load the image successfully!"<< endl;
+	//cout << "Width = "<< rows << " & Height = " << cols << endl;
 	// Memory allocation GPU
 	unsigned char *gpu_data_in, *gpu_data_out;
 	float * gpu_mask;
@@ -110,7 +108,7 @@ int main(int argc, char** argv)
 		PictureKernel <<< grid, threadBlock >>>(gpu_data_in, gpu_data_out, gpu_mask, height, width);
 		//} 
 
-		checkCudaErrors(cudaDeviceSynchroonise());
+		//checkCudaErrors(cudaDeviceSynchroonise());
 	
 		//HANDLE_ERROR(cudaEventRecord(stop, 0));
 		//HANDLE_ERROR(cudaEventSynchronise(stop));
