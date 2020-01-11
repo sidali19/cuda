@@ -14,15 +14,6 @@
 
 #define FILTRE_SIZE 3 
 
-static void HandleError(cudaError_t err,const char *file,int line) {
-	if (err != cudaSuccess){
-		printf("%s in %s at line %d\n" , cudaGetErrorString(err),
-			file, line);
-		exit(EXIT_FAILURE);
-	}
-}
-
-#define HANDLE_ERROR(err) (HandleError( err, __FILE__, __LINE__ ))
 
 __global__ 
 void PictureKernel (unsigned char* dPin, unsigned char* dPout, float *mask, int height, int width)
@@ -48,8 +39,6 @@ void PictureKernel (unsigned char* dPin, unsigned char* dPout, float *mask, int 
 			+ mask[6]*dPin[down -1] + mask[7]*dPin[down] + mask[8]*dPin[down+1]);
 	dPout[position] = (val <= 0 ? 0 : (val >= 255 ? 255 : (unsigned char)val));
 }
-
-inline unsigned int iDivUp(const unsigned int &a, const unsigned &b) { return (a%b != 0) ? (a / b + 1) : (a / b); }
 
 int main(void)
 {
@@ -94,7 +83,7 @@ int main(void)
 	// Set up the grid and block dimensions for the executions
 	const unsigned int block_col = 16;
 	const unsigned int block_row = 8;
-	dim3 grid(iDivUp(height, block_col), iDivUp(width, block_row), 1);
+	dim3 grid(height/block_col, width/ block_row, 1);
 	dim3 threadBlock(block_col, block_row, 1);
 
 	// **** CONVOLUTION STARTS HERE ! ****
