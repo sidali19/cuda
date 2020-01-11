@@ -21,8 +21,8 @@ __global__ viod PictureKernel (unsigned char* dPin, unsigned char* dPout, float 
 	const unsigned int col = blockIdx.y * blockDim.y + threadIdx.y;
 	const unsigned int row = blockIdx.x * blockDim.x + threadIdx.x;
 	int position = row*width+col ;
-	int up = position - w;
-	int down = position + w;
+	int up = position - width;
+	int down = position + width;
 	// Each thread computes one element of dPout if in range
 	if(row==0||col=0||(row=width-1)||(row==height-1))
 	{
@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 	// Lecture et chargement de l'image dans le host en ligne de commande 
 		int width = 0, height = 0, nchannels = 0;
 		int const desired_channels = 1; // request to convert image to gray
-		char const * const filename = argv[1]; 
+		char const * const filename = "./lion.png"; 
 	// Load the image 
 	unsigned char* data_in = stdi_load(filename, &width, &height, &nchannels, desired_channels);
 
@@ -68,15 +68,14 @@ int main(int argc, char** argv)
 	unsigned char *gpu_data_in, *gpu_data_out;
 	float * gpu_mask;
 	cudaMalloc(reinterpret_cast<void **>(&gpu_data_in), width * height * desired_channels*sizeof(float));
-	cudaMalloc(reinterpret_cast<void **>(&gpu_data_out), width * height * desired_channels*sizeof(float);
+	cudaMalloc(reinterpret_cast<void **>(&gpu_data_out), width * height * desired_channels*sizeof(float));
 	cudaMalloc(reinterpret_cast<void **>(&gpu_mask), FILTRE_SIZE*FILTRE_SIZE*sizeof(float));
 	
 		auto h_start = steady_clock::now();
 
 	// Copie des donnees de host vers le device 
-	cudaMemcpy (gpu_data_in, data_in, width * height * desired_channels*sizeof(float) , cudaMemcpyHostToDevice));
-	cudaMemcpy (gpu_mask, mask
-, FILTRE_SIZE*FILTRE_SIZE*sizeof(float), cudaMemcpyHostToDevice));
+	cudaMemcpy (gpu_data_in, data_in, width * height * desired_channels*sizeof(float) , cudaMemcpyHostToDevice);
+	cudaMemcpy (gpu_mask, mask , FILTRE_SIZE*FILTRE_SIZE*sizeof(float), cudaMemcpyHostToDevice);
 	
 	// appel du kernel
 	//unsigned int iter = 10000;
@@ -126,7 +125,7 @@ int main(int argc, char** argv)
 	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
 
 	// Write convoluted image to file (.jpg)
-		stbi_write_jpg(argv[2], height, width, 1, data_out, height);
+		stbi_write_jpg("./exit.jpg", height, width, 1, data_out, height);
 
 	//Deallocation des memoires
 	free(data_in);
