@@ -67,8 +67,8 @@ int main(void)
 	float * gpu_mask;
 	
 	cudaMalloc (( void **)&gpu_data_in, width * height * desired_channels*sizeof(float));
-	cudaMalloc (( void **)&gpu_data_out), width * height * desired_channels*sizeof(float));
-	cudaMalloc (( void **)&gpu_mask), FILTRE_SIZE*FILTRE_SIZE*sizeof(float));
+	cudaMalloc (( void **)&gpu_data_out, width * height * desired_channels*sizeof(float));
+	cudaMalloc (( void **)&gpu_mask, FILTRE_SIZE*FILTRE_SIZE*sizeof(float));
 	
 	
 
