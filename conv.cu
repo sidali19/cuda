@@ -51,7 +51,7 @@ void PictureKernel (unsigned char* dPin, unsigned char* dPout, float *mask, int 
 
 inline unsigned int iDivUp(const unsigned int &a, const unsigned &b) { return (a%b != 0) ? (a / b + 1) : (a / b); }
 
-int main(int argc, char** argv)
+int main(void)
 {
 	// Lecture et chargement de l'image dans le host en ligne de commande 
 		int width = 0, height = 0, nchannels = 0;
@@ -145,7 +145,7 @@ int main(int argc, char** argv)
 	cudaFree(gpu_data_out);
 	cudaFree(gpu_mask);
 	
-	
+	printf("zebi");
 	printf("\n");
 }
 
