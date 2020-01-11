@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 	// Lecture et chargement de l'image dans le host en ligne de commande 
 		int width = 0, height = 0, nchannels = 0;
 		int const desired_channels = 1; // request to convert image to gray
-		char const * const filename = "./lion.png"; 
+		char const * const filename = "im.jpg"; 
 	// Load the image 
 	unsigned char* data_in = stbi_load(filename, &width, &height, &nchannels, desired_channels);
 
