@@ -1,14 +1,17 @@
+
 #include <stdio.h>
-#include <cuda_runtime.h>
-#include <helper_cuda.h>
-#include <helper_functions.h>
-#include <iostream>
-#include <cstdlib>
-#include <time.h>
-#include <chrono>
-#include <math.h>
-using namespace std;
-using namespace std:: chrono;
+#include <stdlib.h>
+
+#define STB_IMAGE_IMPLEMENTATION
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include "stb_image.h"
+#include "stb_image_write.h"
+#include <cuda.h>
+
+#include "cuda_runtime.h"
+
 #define FILTRE_SIZE 3 
 
 static void HandleError(cudaError_t err,const char *file,int line) {
