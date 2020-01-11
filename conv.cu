@@ -1,6 +1,4 @@
-using namespace std::chrono;
-using namespace std;
-#define FILTRE_SIZE 3
+#define FILTRE_SIZE 3 ;
 
 static void HandleError(cudaError_t err,
 	const char *file,
@@ -52,7 +50,7 @@ int main(int argc, char** argv)
 	// check for errors 
 	if (!data_in || !width || !height || !nchannels){
 	printf("Error loading image %s", filename);
-	retunr -1;
+	return -1;
 	}
 
 	// the filter  
@@ -71,7 +69,7 @@ int main(int argc, char** argv)
 	cudaMalloc(reinterpret_cast<void **>(&gpu_data_out), width * height * desired_channels*sizeof(float));
 	cudaMalloc(reinterpret_cast<void **>(&gpu_mask), FILTRE_SIZE*FILTRE_SIZE*sizeof(float));
 	
-		auto h_start = steady_clock::now();
+	//	auto h_start = steady_clock::now();
 
 	// Copie des donnees de host vers le device 
 	cudaMemcpy (gpu_data_in, data_in, width * height * desired_channels*sizeof(float) , cudaMemcpyHostToDevice);
@@ -87,15 +85,15 @@ int main(int argc, char** argv)
 	dim3 threadBlock(block_col, block_row, 1);
 
 	// **** CONVOLUTION STARTS HERE ! ****
-		float elapsed = 0;
-		cudaEvent_t start, stop;
+		//float elapsed = 0;
+		//cudaEvent_t start, stop;
 	
-		HANDLE_ERROR(cudaEventCreate(&start));
-		HANDLE_ERROR(cudaEventCreate(&stop));
+		//HANDLE_ERROR(cudaEventCreate(&start));
+		//HANDLE_ERROR(cudaEventCreate(&stop));
 
-		HANDLE_ERROR(cudaEventRecord(start, 0));
+		//HANDLE_ERROR(cudaEventRecord(start, 0));
 
-		checkCudaErrors(cudaDeviceSynchroonise());
+		//checkCudaErrors(cudaDeviceSynchroonise());
 	
 		//for(int i=0; i < iter; i++){
 		PictureKernel <<< grid, threadBlock >>>(gpu_data_in, gpu_data_out, gpu_mask, height, width);
@@ -103,23 +101,23 @@ int main(int argc, char** argv)
 
 		checkCudaErrors(cudaDeviceSynchroonise());
 	
-		HANDLE_ERROR(cudaEventRecord(stop, 0));
-		HANDLE_ERROR(cudaEventSynchronise(stop));
+		//HANDLE_ERROR(cudaEventRecord(stop, 0));
+		//HANDLE_ERROR(cudaEventSynchronise(stop));
 
-		HANDLE_ERROR(cudaEventElapsedTime(&elapsed, start, stop));
+		//HANDLE_ERROR(cudaEventElapsedTime(&elapsed, start, stop));
 
-		HANDLE_ERROR(cudaEventDestroy(start));
-		HANDLE_ERROR(cudaEventDestroy(stop));
+		//HANDLE_ERROR(cudaEventDestroy(start));
+		//HANDLE_ERROR(cudaEventDestroy(stop));
 	
-		float lasptime = elapsed;
+	//	float lasptime = elapsed;
 
-		cout << "Total Elapsed Time for the Kernel(GPU): "<< lasptime << " s " << endl;
+	/*	cout << "Total Elapsed Time for the Kernel(GPU): "<< lasptime << " s " << endl;
 		auto h_end = steady_clock::now();
 		cout << "Total Elapsed Time(including data transfer): " << (duration<double>(h_end - h_start).count()) << "s\n " << endl;
 
 		int pixel_second = (height * width) / lasptime;
 	cout << "Performance  in pixel/s "<< pixel_second << endl;
-
+	*/
 	// **** CONVOLUTION ENDS HERE ! ****	
 	
 	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
