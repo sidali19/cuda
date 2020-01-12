@@ -30,7 +30,6 @@
 #define maskRows 3
 #define w (TILE_WIDTH + maskCols -1)
 
-//mask in constant memory
 __global__ void tilingKernelProcessing(unsigned char* InputImageData, const float *__restrict__ kernel,
 		unsigned char* outputImageData, int channels, int width, int height){
 
