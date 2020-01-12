@@ -8,6 +8,11 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 #include <cuda.h>
+#include <cstdlib>
+#include <time.h>
+
+#include <chrono>
+#include <math.h>
 
 #include "cuda_runtime.h"
 
@@ -17,43 +22,70 @@
 
 #define SHARE_SIZE_HEIGHT (BLOCK_HEIGHT + FILTRE_SIZE -1)
 #define SHARE_SIZE_WIDTH (BLOCK_WIDTH + FILTRE_SIZE -1)
+#include <iostream>
 
-__global__ 
-void PictureKernel_Shared (unsigned char* dPin, unsigned char* dPout, float *mask, int height, int width)
-{	
-    __shared__ float N_ds[SHARE_SIZE_HEIGHT][SHARE_SIZE_WIDTH];	//block of share memory
 
-     	// allocation in shared memory of image blocks
-	int maskRadius = FILTRE_SIZE/2;
- 
-        int dest = threadIdx.y * SHARE_SIZE_HEIGHT + threadIdx.x;
-        int destY = (threadIdx.y * BLOCK_HEIGHT + threadIdx.x)/SHARE_SIZE_HEIGHT;     //col of shared memory
-        int destX = (threadIdx.y * BLOCK_WIDTH + threadIdx.x)%SHARE_SIZE_WIDTH;		//row of shared memory
-        int srcY = blockIdx.y *BLOCK_HEIGHT + destY - maskRadius;  //row index to fetch data from input image
-        int srcX = blockIdx.x *BLOCK_WIDTH + destX - maskRadius;	//col index to fetch data from input image
-        if(srcY>= 0 && srcY < height && srcX>=0 && srcX < width)
-            N_ds[destY][destX] = dPin[(srcY *width +srcX) ];
-        else
-            N_ds[destY][destX] = 0;
 
-       }
+using namespace std;
+using namespace std:: chrono;
 
-        __syncthreads();
-	// Compute row and column number of dPin and dPout element
+#define TILE_WIDTH 16
+#define maskCols 3
+#define maskRows 3
+#define w (TILE_WIDTH + maskCols -1)
+
+//mask in constant memory
+__constant__ float deviceMaskData[maskRows * maskCols];
+__global__ void constantSharedKernelProcessing(float * InputImageData, const float *__restrict__ kernel,
+		float* outputImageData, int channels, int width, int height){
+
+	__shared__ float N_ds[w][w];	//block of share memory
+
+
+	// allocation in shared memory of image blocks
+	int maskRadius = maskRows/2;
+ 	for (int k = 0; k <channels; k++) {
+ 		int dest = threadIdx.y * TILE_WIDTH + threadIdx.x;
+ 		int destY = dest/w;     //col of shared memory
+ 		int destX = dest%w;		//row of shared memory
+ 		int srcY = blockIdx.y *TILE_WIDTH + destY - maskRadius;  //row index to fetch data from input image
+ 		int srcX = blockIdx.x *TILE_WIDTH + destX - maskRadius;	//col index to fetch data from input image
+ 		if(srcY>= 0 && srcY < height && srcX>=0 && srcX < width)
+ 			N_ds[destY][destX] = InputImageData[(srcY *width +srcX) * channels + k];
+ 		else
+ 			N_ds[destY][destX] = 0;
+
+
+ 		dest = threadIdx.y * TILE_WIDTH+ threadIdx.x + TILE_WIDTH * TILE_WIDTH;
+ 		destY = dest/w;
+		destX = dest%w;
+		srcY = blockIdx.y *TILE_WIDTH + destY - maskRadius;
+		srcX = blockIdx.x *TILE_WIDTH + destX - maskRadius;
+		if(destY < w){
+			if(srcY>= 0 && srcY < height && srcX>=0 && srcX < width)
+				N_ds[destY][destX] = InputImageData[(srcY *width +srcX) * channels + k];
+			else
+				N_ds[destY][destX] = 0;
+		}
+
+ 		__syncthreads();
+
+
  		//compute kernel convolution
- 	float accum = 0;
- 	int y, x;
- 	for (y= 0; y < FILTRE_SIZE; y++)
- 		for(x = 0; x<FILTRE_SIZE; x++)
- 			accum += N_ds[threadIdx.y + y][threadIdx.x + x] *mask[y * maskCols + x];
+ 		float accum = 0;
+ 		int y, x;
+ 		for (y= 0; y < maskCols; y++)
+ 			for(x = 0; x<maskRows; x++)
+ 				accum += N_ds[threadIdx.y + y][threadIdx.x + x] *deviceMaskData[y * maskCols + x];
 
- 	y = blockIdx.y * SHARE_SIZE_HEIGHT + threadIdx.y;
- 	x = blockIdx.x * SHARE_SIZE_WIDTH + threadIdx.x;
- 	if(y < height && x < width)
- 		outputImageData[(y * width + x) ] = accum;
- 	__syncthreads();
+ 		y = blockIdx.y * TILE_WIDTH + threadIdx.y;
+ 		x = blockIdx.x * TILE_WIDTH + threadIdx.x;
+ 		if(y < height && x < width)
+ 			outputImageData[(y * width + x) * channels + k] = accum;
+ 		__syncthreads();
 
-}
+
+ 	}
 
 int main(void)
 {
@@ -92,12 +124,11 @@ int main(void)
 
 	// Set up the grid and block dimensions for the executions
 	const unsigned int block_col = 16;
-	const unsigned int block_row = 8;
+	const unsigned int block_row = 16;
 	dim3 grid(height/block_col, width/ block_row, 1);
 	dim3 threadBlock(block_col, block_row, 1);
 
-
-		PictureKernel <<< grid, threadBlock >>>(gpu_data_in, gpu_data_out, gpu_mask, height, width);
+constantSharedKernelProcessing <<< grid, threadBlock >>>(gpu_data_in, gpu_mask,gpu_data_out,desired_channels,1,height, width);
 	
 	
 	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
