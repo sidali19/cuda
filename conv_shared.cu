@@ -10,8 +10,6 @@
 #include <cuda.h>
 #include <cstdlib>
 #include <time.h>
-
-#include <chrono>
 #include <math.h>
 
 #include "cuda_runtime.h"
@@ -26,8 +24,6 @@
 
 
 
-using namespace std;
-using namespace std:: chrono;
 
 #define TILE_WIDTH 16
 #define maskCols 3
