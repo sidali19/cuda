@@ -31,25 +31,26 @@
 #define w (TILE_WIDTH + maskCols -1)
 
 //mask in constant memory
-__constant__ float deviceMaskData[maskRows * maskCols];
-__global__ void constantSharedKernelProcessing(unsigned char* InputImageData, const float *__restrict__ kernel,
+__global__ void tilingKernelProcessing(unsigned char* InputImageData, const float *__restrict__ kernel,
 		unsigned char* outputImageData, int channels, int width, int height){
 
-	__shared__ float N_ds[w][w];	//block of share memory
+	__shared__ float N_ds[w][w];  //block of image in shared memory
 
 
 	// allocation in shared memory of image blocks
 	int maskRadius = maskRows/2;
  	for (int k = 0; k <channels; k++) {
  		int dest = threadIdx.y * TILE_WIDTH + threadIdx.x;
- 		int destY = dest/w;     //col of shared memory
- 		int destX = dest%w;		//row of shared memory
- 		int srcY = blockIdx.y *TILE_WIDTH + destY - maskRadius;  //row index to fetch data from input image
- 		int srcX = blockIdx.x *TILE_WIDTH + destX - maskRadius;	//col index to fetch data from input image
+ 		int destY = dest/w;     //row of shared memory
+ 		int destX = dest%w;		//col of shared memory
+ 		int srcY = blockIdx.y *TILE_WIDTH + destY - maskRadius; // index to fetch data from input image
+ 		int srcX = blockIdx.x *TILE_WIDTH + destX - maskRadius; // index to fetch data from input image
+ 		int src = (srcY *width +srcX) * channels + k;   // index of input image
  		if(srcY>= 0 && srcY < height && srcX>=0 && srcX < width)
- 			N_ds[destY][destX] = InputImageData[(srcY *width +srcX) * channels + k];
+ 			N_ds[destY][destX] = InputImageData[src];  // copy element of image in shared memory
  		else
  			N_ds[destY][destX] = 0;
+
 
 
  		dest = threadIdx.y * TILE_WIDTH+ threadIdx.x + TILE_WIDTH * TILE_WIDTH;
@@ -57,9 +58,10 @@ __global__ void constantSharedKernelProcessing(unsigned char* InputImageData, co
 		destX = dest%w;
 		srcY = blockIdx.y *TILE_WIDTH + destY - maskRadius;
 		srcX = blockIdx.x *TILE_WIDTH + destX - maskRadius;
+		src = (srcY *width +srcX) * channels + k;
 		if(destY < w){
 			if(srcY>= 0 && srcY < height && srcX>=0 && srcX < width)
-				N_ds[destY][destX] = InputImageData[(srcY *width +srcX) * channels + k];
+				N_ds[destY][destX] = InputImageData[src];
 			else
 				N_ds[destY][destX] = 0;
 		}
@@ -72,17 +74,20 @@ __global__ void constantSharedKernelProcessing(unsigned char* InputImageData, co
  		int y, x;
  		for (y= 0; y < maskCols; y++)
  			for(x = 0; x<maskRows; x++)
- 				accum += N_ds[threadIdx.y + y][threadIdx.x + x] *deviceMaskData[y * maskCols + x];
+ 				accum += N_ds[threadIdx.y + y][threadIdx.x + x] *kernel[y * maskCols + x];
 
  		y = blockIdx.y * TILE_WIDTH + threadIdx.y;
  		x = blockIdx.x * TILE_WIDTH + threadIdx.x;
  		if(y < height && x < width)
- 			outputImageData[(y * width + x) * channels + k] = (unsigned char) accum;
+ 			outputImageData[(y * width + x) * channels + k] = accum;
  		__syncthreads();
 
 
  	}
+
 }
+
+
 int main(void)
 {
 		int width = 0, height = 0, nchannels = 0;
@@ -124,7 +129,7 @@ int main(void)
 	dim3 grid(height/block_col, width/ block_row, 1);
 	dim3 threadBlock(block_col, block_row, 1);
 
-constantSharedKernelProcessing <<< grid, threadBlock >>>(gpu_data_in, gpu_mask,gpu_data_out,desired_channels,1,height, width);
+tilingKernelProcessing <<< grid, threadBlock >>>(gpu_data_in, gpu_mask,gpu_data_out,desired_channels,1,height, width);
 	
 	
 	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
