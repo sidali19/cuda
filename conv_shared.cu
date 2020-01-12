@@ -16,7 +16,7 @@
 
 #define FILTRE_SIZE 3 
 #define BLOCK_HEIGHT 16
-#define BLOCK_WIDTH 8
+#define BLOCK_WIDTH 16
 
 #define SHARE_SIZE_HEIGHT (BLOCK_HEIGHT + FILTRE_SIZE -1)
 #define SHARE_SIZE_WIDTH (BLOCK_WIDTH + FILTRE_SIZE -1)
@@ -82,7 +82,7 @@ __global__ void constantSharedKernelProcessing(float * InputImageData, const flo
 
 
  	}
-
+}
 int main(void)
 {
 		int width = 0, height = 0, nchannels = 0;
