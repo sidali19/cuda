@@ -32,8 +32,8 @@
 
 //mask in constant memory
 __constant__ float deviceMaskData[maskRows * maskCols];
-__global__ void constantSharedKernelProcessing(float * InputImageData, const float *__restrict__ kernel,
-		float* outputImageData, int channels, int width, int height){
+__global__ void constantSharedKernelProcessing(unsigned char* InputImageData, const float *__restrict__ kernel,
+		unsigned char* outputImageData, int channels, int width, int height){
 
 	__shared__ float N_ds[w][w];	//block of share memory
 
@@ -77,7 +77,7 @@ __global__ void constantSharedKernelProcessing(float * InputImageData, const flo
  		y = blockIdx.y * TILE_WIDTH + threadIdx.y;
  		x = blockIdx.x * TILE_WIDTH + threadIdx.x;
  		if(y < height && x < width)
- 			outputImageData[(y * width + x) * channels + k] = accum;
+ 			outputImageData[(y * width + x) * channels + k] = (unsigned char) accum;
  		__syncthreads();
 
 
