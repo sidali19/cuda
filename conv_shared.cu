@@ -14,7 +14,6 @@
 
 #include "cuda_runtime.h"
 
-
 #define FILTRE_SIZE 3 
 #define BLOCK_HEIGHT 32
 #define BLOCK_WIDTH 32
@@ -22,9 +21,6 @@
 #define SHARE_SIZE_HEIGHT (BLOCK_HEIGHT + FILTRE_SIZE -1)
 #define SHARE_SIZE_WIDTH (BLOCK_WIDTH + FILTRE_SIZE -1)
 #include <iostream>
-
-
-
 
 #define TILE_WIDTH 32
 #define maskCols 3
@@ -82,11 +78,9 @@ __global__ void tilingKernelProcessing(unsigned char* InputImageData, const floa
  			outputImageData[(y * width + x) * channels + k] = accum;
  		__syncthreads();
 
-
  	}
 
 }
-
 
 int main(void)
 {
