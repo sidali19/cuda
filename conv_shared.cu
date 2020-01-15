@@ -11,7 +11,7 @@
 #include <cstdlib>
 #include <time.h>
 #include <math.h>
-#include <chrono>
+
 #include "cuda_runtime.h"
 
 
