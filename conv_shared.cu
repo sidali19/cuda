@@ -128,7 +128,7 @@ int main(void)
 
 	// Set up the grid and block dimensions for the executions
 	const unsigned int block_col = 16;
-	const unsigned int block_row = 16;
+	const unsigned int block_row = 8;
 	dim3 grid(height/block_col, width/ block_row, 1);
 	dim3 threadBlock(block_col, block_row, 1);
 
