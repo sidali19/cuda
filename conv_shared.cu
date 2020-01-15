@@ -128,20 +128,14 @@ int main(void)
 	const unsigned int block_row = 32;
 	dim3 grid(height/block_col, width/ block_row, 1);
     dim3 threadBlock(block_col, block_row, 1);
-    
   
 
 tilingKernelProcessing <<< grid, threadBlock >>>(gpu_data_in, gpu_mask,gpu_data_out,desired_channels,height, width);
-	
 
 	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
 
-
-
-
 	stbi_write_jpg("sortie.jpg", height, width, 1, data_out, height);
 
-	
 	free(data_in);
 	free(data_out);
 	cudaFree(gpu_data_in);
