@@ -141,7 +141,7 @@ tilingKernelProcessing <<< grid, threadBlock >>>(gpu_data_in, gpu_mask,gpu_data_
 	
  	 cudaEventElapsedTime(&milliseconds, start, stop);
 	
-        printf(%f,milliseconds);
+        printf("%f",milliseconds);
 	free(data_in);
 	free(data_out);
 	cudaFree(gpu_data_in);
