@@ -15,8 +15,8 @@
 #include "cuda_runtime.h"
 
 #define FILTRE_SIZE 3 
-#define BLOCK_HEIGHT 16
-#define BLOCK_WIDTH 8
+#define BLOCK_HEIGHT 32
+#define BLOCK_WIDTH 32
 
 #define SHARE_SIZE_HEIGHT (BLOCK_HEIGHT + FILTRE_SIZE -1)
 #define SHARE_SIZE_WIDTH (BLOCK_WIDTH + FILTRE_SIZE -1)
@@ -25,12 +25,10 @@
 
 
 
-#define TILE_WIDTH 8
-#define TILE_HEIGHT 16
+#define TILE_WIDTH 32
 #define maskCols 3
 #define maskRows 3
 #define w (TILE_WIDTH + maskCols -1)
-#define L (TILE_HEIGHT + maskRows -1)
 
 __global__ void tilingKernelProcessing(unsigned char* InputImageData, const float *__restrict__ kernel,
 		unsigned char* outputImageData, int channels, int width, int height){
@@ -41,11 +39,10 @@ __global__ void tilingKernelProcessing(unsigned char* InputImageData, const floa
 	// allocation in shared memory of image blocks
 	int maskRadius = maskRows/2;
  	for (int k = 0; k <channels; k++) {
- 		int dest = threadIdx.y * TILE_HEIGHT + threadIdx.y;
-		int destt = threadIdx.x * TILE_WIDTH + threadIdx.x;
- 		int destY = dest/L;     //row of shared memory
- 		int destX = destt/w;		//col of shared memory
- 		int srcY = blockIdx.y *TILE_HEIGHT + destY - maskRadius; // index to fetch data from input image
+ 		int dest = threadIdx.y * TILE_WIDTH + threadIdx.x;
+ 		int destY = dest/w;     //row of shared memory
+ 		int destX = dest%w;		//col of shared memory
+ 		int srcY = blockIdx.y *TILE_WIDTH + destY - maskRadius; // index to fetch data from input image
  		int srcX = blockIdx.x *TILE_WIDTH + destX - maskRadius; // index to fetch data from input image
  		int src = (srcY *width +srcX) * channels + k;   // index of input image
  		if(srcY>= 0 && srcY < height && srcX>=0 && srcX < width)
@@ -55,14 +52,13 @@ __global__ void tilingKernelProcessing(unsigned char* InputImageData, const floa
 
 
 
- 		dest = threadIdx.y * TILE_HEIGHT+ threadIdx.y + TILE_HEIGHT * TILE_WIDTH;
-		destt = threadIdx.x * TILE_WIDTH+ threadIdx.x + TILE_HEIGHT * TILE_WIDTH;
- 		destY = dest/L;
-		destX = destt/w;
+ 		dest = threadIdx.y * TILE_WIDTH+ threadIdx.x + TILE_WIDTH * TILE_WIDTH;
+ 		destY = dest/w;
+		destX = dest%w;
 		srcY = blockIdx.y *TILE_WIDTH + destY - maskRadius;
 		srcX = blockIdx.x *TILE_WIDTH + destX - maskRadius;
 		src = (srcY *width +srcX) * channels + k;
-		if(destY < L){
+		if(destY < w){
 			if(srcY>= 0 && srcY < height && srcX>=0 && srcX < width)
 				N_ds[destY][destX] = InputImageData[src];
 			else
@@ -79,7 +75,7 @@ __global__ void tilingKernelProcessing(unsigned char* InputImageData, const floa
  			for(x = 0; x<maskRows; x++)
  				accum += N_ds[threadIdx.y + y][threadIdx.x + x] *kernel[y * maskCols + x];
 
- 		y = blockIdx.y * TILE_HEIGHT + threadIdx.y;
+ 		y = blockIdx.y * TILE_WIDTH + threadIdx.y;
  		x = blockIdx.x * TILE_WIDTH + threadIdx.x;
  		if(y < height && x < width)
  			outputImageData[(y * width + x) * channels + k] = accum;
@@ -127,8 +123,8 @@ int main(void)
 
 
 	// Set up the grid and block dimensions for the executions
-	const unsigned int block_col = 16;
-	const unsigned int block_row = 8;
+	const unsigned int block_col = 32;
+	const unsigned int block_row = 32;
 	dim3 grid(height/block_col, width/ block_row, 1);
 	dim3 threadBlock(block_col, block_row, 1);
 
