@@ -84,9 +84,9 @@ __global__ void tilingKernelProcessing(unsigned char* InputImageData, const floa
 
 int main(void)
 {
-		//cudaEvent_t start, stop;
-  		//cudaEventCreate(&start);
-  		//cudaEventCreate(&stop);
+		cudaEvent_t start, stop;
+		cudaEventCreate(&start);
+		cudaEventCreate(&stop);
 		int width = 0, height = 0, nchannels = 0;
 		int const desired_channels = 1; // request to convert image to gray
 		char const * const filename = "im.jpg"; 
@@ -124,11 +124,16 @@ int main(void)
 	const unsigned int block_col = 32;
 	const unsigned int block_row = 32;
 	dim3 grid(height/block_col, width/ block_row, 1);
-    dim3 threadBlock(block_col, block_row, 1);
-  
+   	 dim3 threadBlock(block_col, block_row, 1);
+  	cudaEventRecord(start, 0);
 
 tilingKernelProcessing <<< grid, threadBlock >>>(gpu_data_in, gpu_mask,gpu_data_out,desired_channels,height, width);
-	//cudaEventRecord(start);
+	cudaEventRecord(stop, 0);
+	
+	cudaEventSynchronize(stop);
+	float executionTime ;
+	cudaEventElapsedTime(&executionTime, start, stop);
+	printf("SECTION 1 executionTime: %f", executionTime);
 	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
 	
 	
