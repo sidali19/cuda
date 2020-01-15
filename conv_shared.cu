@@ -134,13 +134,15 @@ int main(void)
   
 
 tilingKernelProcessing <<< grid, threadBlock >>>(gpu_data_in, gpu_mask,gpu_data_out,desired_channels,height, width);
-	cudaEventRecord(stop);
-	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
 	cudaEventRecord(start);
+	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
+	cudaEventRecord(stop);
 	stbi_write_jpg("sortie.jpg", height, width, 1, data_out, height);
 	
 	  cudaEventSynchronize(stop);
+	
   	float milliseconds = 0;
+	
  	 cudaEventElapsedTime(&milliseconds, start, stop);
 	
         printf(%f,milliseconds);
