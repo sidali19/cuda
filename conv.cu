@@ -39,6 +39,7 @@ void cuda_error(cudaError_t err,const char *file,int line) {
 			file, line);
 		exit(EXIT_FAILURE);
 	}
+}
 int main(void)
 {
 		int width = 0, height = 0, nchannels = 0;
