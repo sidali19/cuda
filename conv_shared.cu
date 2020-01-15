@@ -135,13 +135,13 @@ tilingKernelProcessing <<< grid, threadBlock >>>(gpu_data_in, gpu_mask,gpu_data_
 	cudaEventElapsedTime(&executionTime, start, stop);
 	
 	
-	//printf("SECTION 1 executionTime: %f", executionTime);
+	
 	
 	
 	
 	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
 	
-	
+	//printf("SECTION 1 executionTime: %f", executionTime);
 	//cudaEventRecord(stop);
 	stbi_write_jpg("sortie.jpg", height, width, 1, data_out, height);
 	
