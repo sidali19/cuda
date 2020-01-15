@@ -143,9 +143,9 @@ tilingKernelProcessing <<< grid, threadBlock >>>(gpu_data_in, gpu_mask,gpu_data_
   	float milliseconds = 0;
   	cudaEventElapsedTime(&milliseconds, start, stop);
 
-	cout << milliseconds << endl;
+	cout << milliseconds ;
 
-	cout << "----------------------------------" << endl;
+	cout << "----------------------------------" ;
 
 
 	stbi_write_jpg("sortie.jpg", height, width, 1, data_out, height);
