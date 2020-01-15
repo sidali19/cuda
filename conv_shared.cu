@@ -143,8 +143,8 @@ tilingKernelProcessing <<< grid, threadBlock >>>(gpu_data_in, gpu_mask,gpu_data_
   	float milliseconds = 0;
   	cudaEventElapsedTime(&milliseconds, start, stop);
 
-	printf(milliseconds) ;
 
+	printf("%.6f", milliseconds);
 	
 
 
