@@ -115,14 +115,14 @@ int main(void)
 	unsigned char *gpu_data_in, *gpu_data_out;
 	float * gpu_mask;
 	
-	cudaMalloc (( void **)&gpu_data_in, width * height * desired_channels*sizeof(float));
-	cudaMalloc (( void **)&gpu_data_out, width * height * desired_channels*sizeof(float));
+	cudaMalloc (( void **)&gpu_data_in, width * height * desired_channels*sizeof(unsigned char));
+	cudaMalloc (( void **)&gpu_data_out, width * height * desired_channels*sizeof(unsigned char));
 	cudaMalloc (( void **)&gpu_mask, FILTRE_SIZE*FILTRE_SIZE*sizeof(float));
 	
 	
 
-	cudaMemcpy (gpu_data_in, data_in, width * height * desired_channels*sizeof(float) , cudaMemcpyHostToDevice);
-	cudaMemcpy (gpu_mask, mask , FILTRE_SIZE*FILTRE_SIZE*sizeof(float), cudaMemcpyHostToDevice);
+	cudaMemcpy (gpu_data_in, data_in, width * height * desired_channels*sizeof(unsigned char) , cudaMemcpyHostToDevice);
+	cudaMemcpy (gpu_mask, mask , FILTRE_SIZE*FILTRE_SIZE*sizeof(unsigned char), cudaMemcpyHostToDevice);
 	
 
 
