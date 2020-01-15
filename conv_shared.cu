@@ -95,7 +95,7 @@ int main(void)
   cudaEventCreate(&stop);
 		int width = 0, height = 0, nchannels = 0;
 		int const desired_channels = 1; // request to convert image to gray
-		char const * const filename = "sunflower.jpg"; 
+		char const * const filename = "im1.jpg"; 
 	// Load the image 
 	unsigned char* data_in = stbi_load(filename, &width, &height, &nchannels, desired_channels);
 
