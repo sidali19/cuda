@@ -11,10 +11,9 @@
 #include <cstdlib>
 #include <time.h>
 #include <math.h>
-#include <chrono>
+
 #include "cuda_runtime.h"
-using namespace std;
-using namespace std:: chrono;
+
 
 #define FILTRE_SIZE 3 
 #define BLOCK_HEIGHT 32
@@ -137,8 +136,7 @@ tilingKernelProcessing <<< grid, threadBlock >>>(gpu_data_in, gpu_mask,gpu_data_
 high_resolution_clock::time_point end= high_resolution_clock::now();
 	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
 
-    chrono::duration<double>  duration = end - start;
-	cout << duration.count()*1000 << endl;
+	cout << (end - start)*1000 << endl;
 
 	cout << "----------------------------------" << endl;
 
