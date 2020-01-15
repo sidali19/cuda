@@ -11,8 +11,10 @@
 #include <cstdlib>
 #include <time.h>
 #include <math.h>
-
+#include <chrono>
 #include "cuda_runtime.h"
+using namespace std;
+using namespace std:: chrono;
 
 #define FILTRE_SIZE 3 
 #define BLOCK_HEIGHT 32
@@ -126,12 +128,19 @@ int main(void)
 	const unsigned int block_col = 32;
 	const unsigned int block_row = 32;
 	dim3 grid(height/block_col, width/ block_row, 1);
-	dim3 threadBlock(block_col, block_row, 1);
+    dim3 threadBlock(block_col, block_row, 1);
+    
+    high_resolution_clock::time_point start= high_resolution_clock::now();
 
 tilingKernelProcessing <<< grid, threadBlock >>>(gpu_data_in, gpu_mask,gpu_data_out,desired_channels,height, width);
 	
-	
+high_resolution_clock::time_point end= high_resolution_clock::now();
 	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
+
+    chrono::duration<double>  duration = end - start;
+	cout << duration.count()*1000 << endl;
+
+	cout << "----------------------------------" << endl;
 
 
 	stbi_write_jpg("sortie.jpg", height, width, 1, data_out, height);
