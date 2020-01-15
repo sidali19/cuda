@@ -129,7 +129,7 @@ int main(void)
 	dim3 grid(height/block_col, width/ block_row, 1);
     dim3 threadBlock(block_col, block_row, 1);
     
-    high_resolution_clock::time_point start= high_resolution_clock::now();
+  
 
 tilingKernelProcessing <<< grid, threadBlock >>>(gpu_data_in, gpu_mask,gpu_data_out,desired_channels,height, width);
 	
