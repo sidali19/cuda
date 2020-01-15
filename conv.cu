@@ -1,17 +1,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
-#define STB_IMAGE_IMPLEMENTATION
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-
 #include "stb_image.h"
 #include "stb_image_write.h"
 #include <cuda.h>
-
 #include "cuda_runtime.h"
-
 #define FILTRE_SIZE 3 
 
 
@@ -40,6 +33,12 @@ void PictureKernel (unsigned char* dPin, unsigned char* dPout, float *mask, int 
 	dPout[position] = (val <= 0 ? 0 : (val >= 255 ? 255 : (unsigned char)val));
 }
 
+void cuda_error(cudaError_t err,const char *file,int line) {
+	if (err != cudaSuccess){
+		printf("%s in %s at line %d\n" , cudaGetErrorString(err),
+			file, line);
+		exit(EXIT_FAILURE);
+	}
 int main(void)
 {
 		int width = 0, height = 0, nchannels = 0;
@@ -64,14 +63,15 @@ int main(void)
 	unsigned char *gpu_data_in, *gpu_data_out;
 	float * gpu_mask;
 	
-	cudaMalloc (( void **)&gpu_data_in, width * height * desired_channels*sizeof(float));
-	cudaMalloc (( void **)&gpu_data_out, width * height * desired_channels*sizeof(float));
-	cudaMalloc (( void **)&gpu_mask, FILTRE_SIZE*FILTRE_SIZE*sizeof(float));
+	cuda_error( cudaMalloc (( void **)&gpu_data_in, width * height * desired_channels*sizeof(float)));
+	
+	cuda_error(cudaMalloc (( void **)&gpu_data_out, width * height * desired_channels*sizeof(float)));
+	cuda_error(cudaMalloc (( void **)&gpu_mask, FILTRE_SIZE*FILTRE_SIZE*sizeof(float)));
 	
 	
 
-	cudaMemcpy (gpu_data_in, data_in, width * height * desired_channels*sizeof(float) , cudaMemcpyHostToDevice);
-	cudaMemcpy (gpu_mask, mask , FILTRE_SIZE*FILTRE_SIZE*sizeof(float), cudaMemcpyHostToDevice);
+	cuda_error(cudaMemcpy (gpu_data_in, data_in, width * height * desired_channels*sizeof(float) , cudaMemcpyHostToDevice));
+	cuda_error(cudaMemcpy (gpu_mask, mask , FILTRE_SIZE*FILTRE_SIZE*sizeof(float), cudaMemcpyHostToDevice));
 	
 
 
@@ -85,7 +85,7 @@ int main(void)
 		PictureKernel <<< grid, threadBlock >>>(gpu_data_in, gpu_data_out, gpu_mask, height, width);
 	
 	
-	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
+	cuda_error(cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost));
 
 
 	stbi_write_jpg("sortie.jpg", height, width, 1, data_out, height);
