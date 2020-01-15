@@ -11,7 +11,7 @@
 #include <cstdlib>
 #include <time.h>
 #include <math.h>
-
+#include <chrono>
 #include "cuda_runtime.h"
 
 
@@ -90,12 +90,9 @@ __global__ void tilingKernelProcessing(unsigned char* InputImageData, const floa
 
 int main(void)
 {
-  cudaEvent_t start, stop;
-  cudaEventCreate(&start);
-  cudaEventCreate(&stop);
 		int width = 0, height = 0, nchannels = 0;
 		int const desired_channels = 1; // request to convert image to gray
-		char const * const filename = "im1.jpg"; 
+		char const * const filename = "im.jpg"; 
 	// Load the image 
 	unsigned char* data_in = stbi_load(filename, &width, &height, &nchannels, desired_channels);
 
@@ -115,37 +112,31 @@ int main(void)
 	unsigned char *gpu_data_in, *gpu_data_out;
 	float * gpu_mask;
 	
-	cudaMalloc (( void **)&gpu_data_in, width * height * desired_channels*sizeof(unsigned char));
-	cudaMalloc (( void **)&gpu_data_out, width * height * desired_channels*sizeof(unsigned char));
+	cudaMalloc (( void **)&gpu_data_in, width * height * desired_channels*sizeof(float));
+	cudaMalloc (( void **)&gpu_data_out, width * height * desired_channels*sizeof(float));
 	cudaMalloc (( void **)&gpu_mask, FILTRE_SIZE*FILTRE_SIZE*sizeof(float));
 	
 	
 
-	cudaMemcpy (gpu_data_in, data_in, width * height * desired_channels*sizeof(unsigned char) , cudaMemcpyHostToDevice);
-	cudaMemcpy (gpu_mask, mask , FILTRE_SIZE*FILTRE_SIZE*sizeof(unsigned char), cudaMemcpyHostToDevice);
+	cudaMemcpy (gpu_data_in, data_in, width * height * desired_channels*sizeof(float) , cudaMemcpyHostToDevice);
+	cudaMemcpy (gpu_mask, mask , FILTRE_SIZE*FILTRE_SIZE*sizeof(float), cudaMemcpyHostToDevice);
 	
 
 
 	// Set up the grid and block dimensions for the executions
-	const unsigned int block_col = 16;
-	const unsigned int block_row = 8;
+	const unsigned int block_col = 32;
+	const unsigned int block_row = 32;
 	dim3 grid(height/block_col, width/ block_row, 1);
     dim3 threadBlock(block_col, block_row, 1);
     
-      cudaEventRecord(start);
+    high_resolution_clock::time_point start= high_resolution_clock::now();
 
 tilingKernelProcessing <<< grid, threadBlock >>>(gpu_data_in, gpu_mask,gpu_data_out,desired_channels,height, width);
-      cudaEventRecord(stop);
+	
 
 	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
 
-	cudaEventSynchronize(stop);
-  	float milliseconds = 0;
-  	cudaEventElapsedTime(&milliseconds, start, stop);
 
-
-	printf("%f", milliseconds);
-	
 
 
 	stbi_write_jpg("sortie.jpg", height, width, 1, data_out, height);
