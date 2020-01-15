@@ -133,7 +133,7 @@ tilingKernelProcessing <<< grid, threadBlock >>>(gpu_data_in, gpu_mask,gpu_data_
 	cudaEventSynchronize(stop);
 	float executionTime ;
 	cudaEventElapsedTime(&executionTime, start, stop);
-	printf("SECTION 1 executionTime: %f", executionTime);
+	//printf("SECTION 1 executionTime: %f", executionTime);
 	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
 	
 	
