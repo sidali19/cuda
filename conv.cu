@@ -105,8 +105,8 @@ int main(int argc, char** argv)
 		// data copy  device to host
 		cuda_error_check(cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost));
 		
-		printf("Execution Time: %f /n", executionTime);
-		printf("Execution Time image/seconde : %f /n", executionTime/1000);
+		printf("Execution Time 1000 images : %f ms \n", executionTime);
+		printf("Execution Time image : %f ms \n", executionTime/1000);
 		//write the image 
 		if(!stbi_write_jpg(filename2, height, width, 1, data_out, height))
 		{
