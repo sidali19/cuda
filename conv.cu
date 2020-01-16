@@ -105,7 +105,7 @@ int main(void)
 	
 	cudaMemcpy (data_out, gpu_data_out, width * height * desired_channels, cudaMemcpyDeviceToHost);
 	
-	//printf("SECTION 1 executionTime: %f", executionTime);
+	printf("ExecutionTime: %f", executionTime);
 	//cudaEventRecord(stop);
 	stbi_write_jpg("sortie.jpg", height, width, 1, data_out, height);
 	
