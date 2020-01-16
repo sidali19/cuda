@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 		float executionTime ;
 		int const desired_channels = 1; // request to convert image to gray
 		char const * const filename1 = argv[1]; 
-		char const * const filename2 = "sortie.jpg"
+		char const * const filename2 = "sortie.jpg";
 		// Load the image 
 		unsigned char* data_in = stbi_load(filename1, &width, &height, &nchannels, desired_channels);
 		// check for errors 
