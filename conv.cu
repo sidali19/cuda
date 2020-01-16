@@ -94,7 +94,7 @@ int main(void)
    	 dim3 threadBlock(block_col, block_row, 1);
   	cudaEventRecord(start, 0);
 
-	PictureKernel <<< grid, threadBlock >>>(gpu_data_in, gpu_mask,gpu_data_out,desired_channels,height, width);
+	PictureKernel <<< grid, threadBlock >>>(gpu_data_in, gpu_data_out,gpu_mask,height, width);
 	cudaEventRecord(stop, 0);
 	
 	cudaEventSynchronize(stop);
