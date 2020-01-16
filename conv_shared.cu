@@ -28,7 +28,8 @@
 __global__ void ShareKernelProcessing(unsigned char* InputImageData, const float *kernel,
 		unsigned char* outputImageData, int channels, int width, int height){
 
-	__shared__ float N_ds[w][w];  //block of image in shared memory
+	__shared__ float N_ds[SHARE_SIZE_HEIGHT][SHARE_SIZE_WIDTH];  //block of image in shared memory
+
 
 
 	// allocation in shared memory of image blocks
@@ -38,7 +39,7 @@ __global__ void ShareKernelProcessing(unsigned char* InputImageData, const float
  		int destY = dest/SHARE_SIZE_HEIGHT ;     //row of shared memory
  		int destX = dest%SHARE_SIZE_WIDTH;		//col of shared memory
  		int srcY = blockIdx.y *TILE_WIDTH + destY - maskr; // index to fetch data from input image
- 		int srcX = blockIdx.x *TILE_WIDTH + destX - mask; // index to fetch data from input image
+ 		int srcX = blockIdx.x *TILE_WIDTH + destX - maskr; // index to fetch data from input image
  		int src = (srcY *width +srcX) * channels + k;   // index of input image
  		if(srcY>= 0 && srcY < height && srcX>=0 && srcX < width)
  			N_ds[destY][destX] = InputImageData[src];  // copy element of image in shared memory
