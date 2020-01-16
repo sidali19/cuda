@@ -81,8 +81,8 @@ int main(int argc, char** argv)
 		cuda_error_check(cudaMemcpy (gpu_mask, mask , FILTRE_SIZE*FILTRE_SIZE*sizeof(float), cudaMemcpyHostToDevice));
 		
 		// Set up the grid and block dimensions for the executions
-		const unsigned int block_col = 32;
-		const unsigned int block_row = 32;
+		const unsigned int block_col = 16;
+		const unsigned int block_row = 16;
 		// creat cuda event to calculate time execution [start,stop]
 		cudaEvent_t start, stop;
 		cudaEventCreate(&start);
