@@ -34,15 +34,16 @@ __global__ void ShareKernelProcessing(unsigned char* InputImageData, const float
 
 	// allocation in shared memory of image blocks
 	int maskr = MASKROWS/2;
- 	for (int k = 0; k <channels; k++) {
+ 
  		int dest = threadIdx.y * TILE_WIDTH + threadIdx.x;
  		int destY = dest/SHARE_SIZE_HEIGHT ;     //row of shared memory
  		int destX = dest%SHARE_SIZE_WIDTH;		//col of shared memory
  		int srcY = blockIdx.y *TILE_WIDTH + destY - maskr; // index to fetch data from input image
  		int srcX = blockIdx.x *TILE_WIDTH + destX - maskr; // index to fetch data from input image
  		int src = (srcY *width +srcX) * channels + k;   // index of input image
- 		if(srcY>= 0 && srcY < height && srcX>=0 && srcX < width)
+ 		if(srcY>= 0 && srcY < height && srcX>=0 && srcX < width){
  			N_ds[destY][destX] = InputImageData[src];  // copy element of image in shared memory
+		}
  		else
              N_ds[destY][destX] = 0;
              
@@ -55,7 +56,7 @@ __global__ void ShareKernelProcessing(unsigned char* InputImageData, const float
 		if(destY < SHARE_SIZE_HEIGHT){
 			if(srcY>= 0 && srcY < height && srcX>=0 && srcX < width)
 				N_ds[destY][destX] = InputImageData[src];
-			else
+			else{
 				N_ds[destY][destX] = 0;
 		}
 
@@ -67,17 +68,19 @@ __global__ void ShareKernelProcessing(unsigned char* InputImageData, const float
  		int y, x;
  		for (y= 0; y < MASKCOLS; y++)
  			for(x = 0; x<MASKROWS; x++)
- 				accum += N_ds[threadIdx.y + y][threadIdx.x + x] *kernel[y * MASKCOLS + x];
-
+			{
+ 		accum += N_ds[threadIdx.y + y][threadIdx.x + x] *kernel[y * MASKCOLS + x];
+			
  		y = blockIdx.y * TILE_WIDTH + threadIdx.y;
  		x = blockIdx.x * TILE_WIDTH + threadIdx.x;
  		if(y < height && x < width)
- 			outputImageData[(y * width + x) * channels + k] = accum;
+ 			outputImageData[(y * width + x) ] = accum;
  		__syncthreads();
+			}
 
  	}
 
-}
+
 
 void cuda_error(cudaError_t err,const char *file,int line) {
 	//cude check errors 
@@ -87,6 +90,7 @@ void cuda_error(cudaError_t err,const char *file,int line) {
 		exit(EXIT_FAILURE);
 	}
 }
+
 #define cuda_error_check(err) (cuda_error( err, __FILE__, __LINE__ ))
 
 int main(int argc, char** argv)
